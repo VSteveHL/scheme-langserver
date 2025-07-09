@@ -125,6 +125,8 @@
       batches)))
 
 (define (shrink-paths linkage paths)
+(pretty-print `(DEBUG: function in shrink-paths))
+(pretty-print `(DEBUG: var paths ,paths))
   (let* ([path->id-map (file-linkage-path->id-map linkage)]
       [id->path-map (file-linkage-id->path-map linkage)]
       [ids (map (lambda (current-path) (hashtable-ref path->id-map current-path #f)) paths)]
@@ -135,6 +137,8 @@
       shrinked-ids)))
 
 (define (shrink-ids matrix ids)
+  (pretty-print `(DEBUG: function in shrink-ids))
+  (pretty-print `(DEBUG: matrix ,matrix))
   (let ([tmp 
       (filter
         (lambda (current-from) 

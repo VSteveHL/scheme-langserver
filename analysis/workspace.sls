@@ -84,7 +84,7 @@
     [(path threaded? type-inference?) (init-workspace path 'akku 'r6rs threaded? type-inference?)]
     [(path identifier threaded? type-inference?) (init-workspace path identifier 'r6rs threaded? type-inference?)]
     [(path identifier top-environment threaded? type-inference?)
-    ;; (pretty-print `(DEBUG: function: init-workspace))
+    (pretty-print `(DEBUG: function: init-workspace))
       (let* ([root-file-node 
             (init-virtual-file-system path '() 
               (cond
@@ -202,6 +202,7 @@
 
 ;; target-file-node<-[linkage]-other-file-nodes
 (define (refresh-workspace-for workspace-instance target-file-node)
+  ;;(pretty-print `(DEBUG: function in refresh-workspace-for))
   (if (document-refreshable? (file-node-document target-file-node))
     (let* ([linkage (workspace-file-linkage workspace-instance)]
         [root-file-node (workspace-file-node workspace-instance)]
@@ -210,7 +211,10 @@
         [path (refresh-file-linkage&get-refresh-path linkage root-library-node target-file-node (document-index-node-list (file-node-document target-file-node)) library-identifiers-list)]
         [path-aheadof `(,@(list-ahead-of path (file-node-path target-file-node)) ,(file-node-path target-file-node))]
         [refreshable-path (filter (lambda (single) (document-refreshable? (file-node-document (walk-file root-file-node single)))) path-aheadof)]
-        [refreshable-batches (shrink-paths linkage refreshable-path)])
+        [DEBUG (pretty-print `(DEBUG: break2 in))]
+        [refreshable-batches (shrink-paths linkage refreshable-path)]
+        [DEBUG (pretty-print `(DEBUG: break2 out))]
+        )
       (init-references workspace-instance refreshable-batches))))
 
 (define (init-virtual-file-system path parent my-filter)
