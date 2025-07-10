@@ -18,7 +18,7 @@
       "\r\n\r\n" target)))
 
 (test-begin "log-debug")
-(let loop ([lines (read-lines "/home/vstevehl/Desktop/main/scheme-langserver.log")]
+(let loop ([lines (read-lines "/home/vstevehl/Desktop/main/scheme-langserver copy.log")]
     [result '()]
     [read? #f])
   (if (not (null? lines))
