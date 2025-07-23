@@ -161,74 +161,129 @@
           [r (map identifier-reference-identifier top)]
           [i (identifier-reference-identifier identifier)]
           [is (map identifier-reference-library-identifier top)])
-        (if (find meta-library? is)
-          (cond 
-            [(equal? r '(define)) (private-add-rule rules `((,define-process) . ,identifier))]
-            [(equal? r '(define-syntax)) (private-add-rule rules `((,define-syntax-process) . ,identifier))]
-            [(equal? r '(define-record-type)) (private-add-rule rules `((,define-record-type-process) . ,identifier))]
-            [(equal? r '(do)) (private-add-rule rules `((,do-process) . ,identifier))]
-            [(equal? r '(case-lambda)) (private-add-rule rules `((,case-lambda-process) . ,identifier))]
-            [(equal? r '(lambda)) (private-add-rule rules `((,lambda-process) . ,identifier))]
+        (cond
+          [(find meta-library? is)
+            (cond 
+              [(equal? r '(define)) (private-add-rule rules `((,define-process) . ,identifier))]
+              [(equal? r '(define-syntax)) (private-add-rule rules `((,define-syntax-process) . ,identifier))]
+              [(equal? r '(define-record-type)) (private-add-rule rules `((,define-record-type-process) . ,identifier))]
+              [(equal? r '(do)) (private-add-rule rules `((,do-process) . ,identifier))]
+              [(equal? r '(case-lambda)) (private-add-rule rules `((,case-lambda-process) . ,identifier))]
+              [(equal? r '(lambda)) (private-add-rule rules `((,lambda-process) . ,identifier))]
+  
+              [(equal? r '(set!)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
+              [(equal? r '(set-top-level-value!)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
+              [(equal? r '(define-top-level-value)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
+  
+              [(equal? r '(set-top-level-syntax!)) (private-add-rule rules `((,define-top-level-syntax-process) . ,identifier))]
+              [(equal? r '(define-top-level-syntax)) (private-add-rule rules `((,define-top-level-syntax-process) . ,identifier))]
+  
+              [(equal? r '(let)) (private-add-rule rules `((,let-process) . ,identifier))]
+              [(equal? r '(let*)) (private-add-rule rules `((,let*-process) . ,identifier))]
+              [(equal? r '(let-values)) (private-add-rule rules `((,let-values-process) . ,identifier))]
+              [(equal? r '(let*-values)) (private-add-rule rules `((,let*-values-process) . ,identifier))]
+              [(equal? r '(let-syntax)) (private-add-rule rules `((,let-syntax-process) . ,identifier))]
+              [(equal? r '(letrec)) (private-add-rule rules `((,letrec-process) . ,identifier))]
+              [(equal? r '(letrec*)) (private-add-rule rules `((,letrec*-process) . ,identifier))]
+              [(equal? r '(letrec-syntax)) (private-add-rule rules `((,letrec-syntax-process) . ,identifier))]
+              [(equal? r '(fluid-let)) (private-add-rule rules `((,fluid-let-process) . ,identifier))]
+              [(equal? r '(fluid-let-syntax)) (private-add-rule rules `((,fluid-let-syntax-process) . ,identifier))]
+  
+              [(equal? r '(syntax-case)) (private-add-rule rules `((,syntax-case-process) . ,identifier))]
+              [(equal? r '(syntax-rules)) (private-add-rule rules `((,syntax-rules-process) . ,identifier))]
+              [(equal? r '(identifier-syntax)) (private-add-rule rules `((,identifier-syntax-process) . ,identifier))]
+              [(equal? r '(with-syntax)) (private-add-rule rules `((,with-syntax-process) . ,identifier))]
+  
+              [(equal? r '(library)) (private-add-rule rules `((,library-import-process . ,export-process) . ,identifier))]
+              [(equal? r '(invoke-library)) (private-add-rule rules `((,invoke-library-process) . ,identifier))]
+              [(equal? r '(import)) 
+                (let ([special 
+                      (lambda (root-file-node root-library-node document index-node)
+                        (if (null? (index-node-parent index-node))
+                          (import-process root-file-node root-library-node document index-node)
+                          (let* ([t (car (index-node-children (index-node-parent index-node)))]
+                              [t-e (annotation-stripped (index-node-datum/annotations t))])
+                            (cond 
+                              [(not (symbol? t-e))
+                                (import-process root-file-node root-library-node document index-node)]
+                              [(and (null? (index-node-parent t)) (equal? t-e 'library)) 
+                                (do-nothing root-file-node root-library-node document index-node)]
+                              [(null? (index-node-parent t)) 
+                                (import-process root-file-node root-library-node document index-node)]
+                              [(find 
+                                (lambda (ss)
+                                  (and (equal? (identifier-reference-identifier ss) 'library)
+                                    (contain? '((chezscheme) (rnrs) (rnrs (6)) (scheme) (rnrs base)) (identifier-reference-library-identifier ss)))) 
+                                (apply append (map root-ancestor (find-available-references-for current-document (index-node-parent t) t-e))))
+                                (do-nothing root-file-node root-library-node document index-node)]
+                              [else (import-process root-file-node root-library-node document index-node)]))))])
+                  (private-add-rule rules `((,special) . ,identifier)))]
+  
+              [(equal? r '(load)) (private-add-rule rules `((,load-process) . ,identifier))]
+              [(equal? r '(load-program)) (private-add-rule rules `((,load-program-process) . ,identifier))]
+              [(equal? r '(load-library)) (private-add-rule rules `((,load-library-process) . ,identifier))]
+  
+              [(equal? r '(body)) (private-add-rule rules `((,do-nothing . ,body-process) . ,identifier))]
+  
+              [else rules])]
+            [(find meta-library-r7rs? is)
+              (cond 
+                [(equal? r '(define)) (private-add-rule rules `((,define-process) . ,identifier))]
+                [(equal? r '(define-syntax)) (private-add-rule rules `((,define-syntax-process) . ,identifier))]
+                [(equal? r '(define-record-type)) (private-add-rule rules `((,define-record-type-process) . ,identifier))]
+                [(equal? r '(do)) (private-add-rule rules `((,do-process) . ,identifier))]
+                [(equal? r '(case-lambda)) (private-add-rule rules `((,case-lambda-process) . ,identifier))]
+                [(equal? r '(lambda)) (private-add-rule rules `((,lambda-process) . ,identifier))]
+    
+                [(equal? r '(set!)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
+    
+                [(equal? r '(let)) (private-add-rule rules `((,let-process) . ,identifier))]
+                [(equal? r '(let*)) (private-add-rule rules `((,let*-process) . ,identifier))]
+                [(equal? r '(let-values)) (private-add-rule rules `((,let-values-process) . ,identifier))]
+                [(equal? r '(let*-values)) (private-add-rule rules `((,let*-values-process) . ,identifier))]
+                [(equal? r '(let-syntax)) (private-add-rule rules `((,let-syntax-process) . ,identifier))]
+                [(equal? r '(letrec)) (private-add-rule rules `((,letrec-process) . ,identifier))]
+                [(equal? r '(letrec*)) (private-add-rule rules `((,letrec*-process) . ,identifier))]
+                [(equal? r '(letrec-syntax)) (private-add-rule rules `((,letrec-syntax-process) . ,identifier))]
+    
+                [(equal? r '(syntax-rules)) (private-add-rule rules `((,syntax-rules-process) . ,identifier))]
+    
+                [(equal? r '(import)) 
+                  (let ([special 
+                        (lambda (root-file-node root-library-node document index-node)
+                          (if (null? (index-node-parent index-node))
+                            (import-process root-file-node root-library-node document index-node)
+                            (let* ([t (car (index-node-children (index-node-parent index-node)))]
+                                [t-e (annotation-stripped (index-node-datum/annotations t))])
+                              (cond 
+                                [(not (symbol? t-e))
+                                  (import-process root-file-node root-library-node document index-node)]
+                                [(and (null? (index-node-parent t)) (equal? t-e 'library)) 
+                                  (do-nothing root-file-node root-library-node document index-node)]
+                                [(null? (index-node-parent t)) 
+                                  (import-process root-file-node root-library-node document index-node)]
+                                [(find 
+                                  (lambda (ss)
+                                    (and (equal? (identifier-reference-identifier ss) 'library)
+                                      (contain? '((chezscheme) (rnrs) (rnrs (6)) (scheme) (rnrs base)) (identifier-reference-library-identifier ss)))) 
+                                  (apply append (map root-ancestor (find-available-references-for current-document (index-node-parent t) t-e))))
+                                  (do-nothing root-file-node root-library-node document index-node)]
+                                [else (import-process root-file-node root-library-node document index-node)]))))])
+                    (private-add-rule rules `((,special) . ,identifier)))]
+    
+                [(equal? r '(load)) (private-add-rule rules `((,load-process) . ,identifier))]
+    
+                ;;;;;;;;;;;;;;;;; r7rs new rules
+                [(equal? r '(when)) (private-add-rule rules `((,when-process-r7rs) . ,identifier))]
+                [(equal? r '(unless)) ]
+                [(equal? r '(define-library))]
 
-            [(equal? r '(set!)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
-            [(equal? r '(set-top-level-value!)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
-            [(equal? r '(define-top-level-value)) (private-add-rule rules `((,define-top-level-value-process) . ,identifier))]
-
-            [(equal? r '(set-top-level-syntax!)) (private-add-rule rules `((,define-top-level-syntax-process) . ,identifier))]
-            [(equal? r '(define-top-level-syntax)) (private-add-rule rules `((,define-top-level-syntax-process) . ,identifier))]
-
-            [(equal? r '(let)) (private-add-rule rules `((,let-process) . ,identifier))]
-            [(equal? r '(let*)) (private-add-rule rules `((,let*-process) . ,identifier))]
-            [(equal? r '(let-values)) (private-add-rule rules `((,let-values-process) . ,identifier))]
-            [(equal? r '(let*-values)) (private-add-rule rules `((,let*-values-process) . ,identifier))]
-            [(equal? r '(let-syntax)) (private-add-rule rules `((,let-syntax-process) . ,identifier))]
-            [(equal? r '(letrec)) (private-add-rule rules `((,letrec-process) . ,identifier))]
-            [(equal? r '(letrec*)) (private-add-rule rules `((,letrec*-process) . ,identifier))]
-            [(equal? r '(letrec-syntax)) (private-add-rule rules `((,letrec-syntax-process) . ,identifier))]
-            [(equal? r '(fluid-let)) (private-add-rule rules `((,fluid-let-process) . ,identifier))]
-            [(equal? r '(fluid-let-syntax)) (private-add-rule rules `((,fluid-let-syntax-process) . ,identifier))]
-
-            [(equal? r '(syntax-case)) (private-add-rule rules `((,syntax-case-process) . ,identifier))]
-            [(equal? r '(syntax-rules)) (private-add-rule rules `((,syntax-rules-process) . ,identifier))]
-            [(equal? r '(identifier-syntax)) (private-add-rule rules `((,identifier-syntax-process) . ,identifier))]
-            [(equal? r '(with-syntax)) (private-add-rule rules `((,with-syntax-process) . ,identifier))]
-
-            [(equal? r '(library)) (private-add-rule rules `((,library-import-process . ,export-process) . ,identifier))]
-            [(equal? r '(invoke-library)) (private-add-rule rules `((,invoke-library-process) . ,identifier))]
-            [(equal? r '(import)) 
-              (let ([special 
-                    (lambda (root-file-node root-library-node document index-node)
-                      (if (null? (index-node-parent index-node))
-                        (import-process root-file-node root-library-node document index-node)
-                        (let* ([t (car (index-node-children (index-node-parent index-node)))]
-                            [t-e (annotation-stripped (index-node-datum/annotations t))])
-                          (cond 
-                            [(not (symbol? t-e))
-                              (import-process root-file-node root-library-node document index-node)]
-                            [(and (null? (index-node-parent t)) (equal? t-e 'library)) 
-                              (do-nothing root-file-node root-library-node document index-node)]
-                            [(null? (index-node-parent t)) 
-                              (import-process root-file-node root-library-node document index-node)]
-                            [(find 
-                              (lambda (ss)
-                                (and (equal? (identifier-reference-identifier ss) 'library)
-                                  (contain? '((chezscheme) (rnrs) (rnrs (6)) (scheme) (rnrs base)) (identifier-reference-library-identifier ss)))) 
-                              (apply append (map root-ancestor (find-available-references-for current-document (index-node-parent t) t-e))))
-                              (do-nothing root-file-node root-library-node document index-node)]
-                            [else (import-process root-file-node root-library-node document index-node)]))))])
-                (private-add-rule rules `((,special) . ,identifier)))]
-
-            [(equal? r '(load)) (private-add-rule rules `((,load-process) . ,identifier))]
-            [(equal? r '(load-program)) (private-add-rule rules `((,load-program-process) . ,identifier))]
-            [(equal? r '(load-library)) (private-add-rule rules `((,load-library-process) . ,identifier))]
-
-            [(equal? r '(body)) (private-add-rule rules `((,do-nothing . ,body-process) . ,identifier))]
-
-            [else rules])
-          (route&add 
-            rules identifier 
-            file-linkage identifier-list current-document expanded+callee-list memory
-            private-add-rule step))))
+                [else rules])]
+            [else
+              (route&add 
+                rules identifier 
+                file-linkage identifier-list current-document expanded+callee-list memory
+                private-add-rule step)])))
     '()
     (filter 
       (lambda (identifier) 
@@ -238,6 +293,8 @@
             (equal? 'syntax-parameter (identifier-reference-type identifier))
             (equal? 'procedure (identifier-reference-type identifier)))))
       identifier-list)))
+
+
 (define private:find-available-references-for 
   (case-lambda 
     [(expanded+callee-list current-document current-index-node)
