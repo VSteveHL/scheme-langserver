@@ -26,9 +26,6 @@
 (define (meta-library? list-instance)
   (not (null? (find-meta list-instance))))
 
-(define (meta-library-r7rs? list-instance)
-  (not (null? (find-meta list-instance 'r7rs))))
-
 (define find-meta
   (case-lambda
     [(list-instance) (find-meta list-instance 'r6rs)]
