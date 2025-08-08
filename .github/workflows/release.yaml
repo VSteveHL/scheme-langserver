@@ -1,9 +1,7 @@
-# stub from https://github.com/softprops/action-gh-release 
 name: Release 
 on:
   push:
-    tags:
-      - "*.*.*"
+  workflow_dispatch:
   # pull_request:
   #   branches: main
 
@@ -46,7 +44,22 @@ jobs:
       #               '
 
       - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          repo: ufo5260987423/scheme-langserver
-          files: build/scheme-langserver-x86_64-linux-glibc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          md5=$(md5sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
+          sha256=$(sha256sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
+          note="### build time
+
+          $(date -uIs)
+          
+          ### File Hashes
+          
+          | Algorithm | Hash |
+          |-----------|------|
+          | MD5       | \`$md5\` |
+          | SHA256    | \`$sha256\` |"
+
+          gh release edit auto-build --title auto-build-$(date +%Y-%m-%d) --notes "$note" -R ${{ github.repository }}
+
+          gh release upload auto-build build/scheme-langserver-x86_64-linux-glibc --clobber -R ${{ github.repository }}
