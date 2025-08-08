@@ -6,8 +6,10 @@
 (define (display-help)
   (let ([prog-name (car (command-line))])
     (format (current-error-port) "Usage:
-  ~a --help | -h
-  ~a [input-port] [output-port] [log-path]
+  
+  ~a [option] ...
+
+Options:
 
 Arguments:
   input-port                Port to read messages (default: stdin)

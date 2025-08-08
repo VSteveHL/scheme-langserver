@@ -1,6 +1,7 @@
 (library (scheme-langserver)
   (export 
-    init-server)
+    init-server
+    top-environment-element)
   (import 
     (chezscheme) 
     (ufo-thread-pool) 
@@ -247,4 +248,7 @@
                 [else 
                   (display-condition c log-port)
                   (do-log-timestamp server-instance)])))]))
+
+(define-enumeration top-environment-element (r6rs r7rs s7 goldfish) top-environment)
+
 )
