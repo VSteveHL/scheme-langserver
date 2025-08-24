@@ -1,6 +1,6 @@
 #!/usr/bin/env scheme-script
 ;; -*- mode: scheme; coding: utf-8 -*- !#
-;; Copyright (c) 2022 WANG Zheng
+;; Copyright (c) 2025 WANG Zheng, HUANG zengqian
 ;; SPDX-License-Identifier: MIT
 #!r6rs
 
@@ -18,24 +18,6 @@
     (scheme-langserver virtual-file-system index-node)
     (scheme-langserver virtual-file-system file-node)
     (scheme-langserver virtual-file-system document))
-
-(test-begin "let-process")
-    (let* ( [root-file-node (init-virtual-file-system "./util" '() (lambda (fuzzy) #t))]
-            [root-library-node '()]
-            [target-file-node (walk-file root-file-node "./util/matrix.sls")]
-            [document (file-node-document target-file-node)]
-            ;; a let node
-            [root-index-node (car (document-index-node-list document))]
-            [target-index-node (pick-index-node-from `(,root-index-node) (text+position->int (document-text document) 13 2))])
-
-            (let-process root-file-node root-library-node document target-index-node)
-            (test-equal #f
-                (not 
-                    (find 
-                        (lambda (reference) 
-                            (equal? 'rows-count (identifier-reference-identifier reference)))
-                        (index-node-references-import-in-this-node target-index-node)))))
-(test-end)
 
 (test-begin "let1-process")
     (let* ( [root-file-node (init-virtual-file-system "./tests/resources/r7rs" '() (lambda (fuzzy) #t) 's7)]
