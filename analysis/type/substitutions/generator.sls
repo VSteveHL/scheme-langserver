@@ -28,6 +28,8 @@
     (scheme-langserver analysis type substitutions rules define)
     (scheme-langserver analysis type substitutions rules application)
     (scheme-langserver analysis type substitutions rules begin)
+    (scheme-langserver analysis type substitutions rules define*)
+    (scheme-langserver analysis type substitutions rules lambda*)
     (scheme-langserver analysis type substitutions util)
 
     (scheme-langserver analysis type substitutions self-defined-rules router))
@@ -118,10 +120,11 @@
           [r (map identifier-reference-identifier top)]
           [i (identifier-reference-identifier identifier)]
           [is (map identifier-reference-library-identifier top)]
-          [type (map identifier-reference-type top)])
+          [type (map identifier-reference-type top)]
+          [top-environment (car (map identifier-reference-top-environment top))])
         (if (or (equal? '(procedure) type) (equal? '(variable) type) (equal? '(getter) type) (equal? '(setter) type) (equal? '(predicator) type) (equal? '(constructor) type)) 
           (private-add-rule rules `((,application-process) . ,identifier))
-          (if (find meta-library? is)
+          (if (find (lambda (is) (meta-library? is top-environment)) is)
             (cond 
               [(equal? r '(define)) (private-add-rule rules `((,define-process) . ,identifier))]
               [(equal? r '(define-record-type)) (private-add-rule rules `((,define-record-type-process) . ,identifier))]
@@ -142,6 +145,9 @@
 
               [(equal? r '(begin)) (private-add-rule rules `((,begin-process) . ,identifier))]
 
+              [(equal? r '(define*)) (private-add-rule rules `((,define*-process) . ,identifier))]
+              [(equal? r '(lambda*)) (private-add-rule rules `((,lambda*-process) . ,identifier))]
+              
               [else (private-add-rule rules `((,do-nothing) . ,identifier))])
             (route&add rules identifier private-add-rule)))))
     '()

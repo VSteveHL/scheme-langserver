@@ -40,7 +40,7 @@
   ;; this function is used to get all identifier index-nodes.
   (map
     (lambda (index-node)
-      (let ([ann (index-node-datum/annotations index-node)]
+      (let* ([ann (index-node-datum/annotations index-node)]
         [expression (annotation-stripped ann)])
           (match expression
             [(? symbol? expression)
