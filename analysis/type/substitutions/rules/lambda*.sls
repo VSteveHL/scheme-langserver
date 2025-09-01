@@ -1,5 +1,5 @@
-(library (scheme-langserver analysis type substitutions rules lambda)
-  (export lambda-process)
+(library (scheme-langserver analysis type substitutions rules lambda*)
+  (export lambda*-process)
   (import 
     (chezscheme) 
     (ufo-match)
@@ -14,7 +14,7 @@
     (scheme-langserver virtual-file-system document))
 
 
-(define (lambda-process document index-node)
+(define (lambda*-process document index-node)
   (let* ([ann (index-node-datum/annotations index-node)]
       [expression (annotation-stripped ann)]
       [children (index-node-children index-node)])
