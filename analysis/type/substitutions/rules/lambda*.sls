@@ -24,7 +24,7 @@
           (let* ([return-index-node (car (reverse children))]
 
               ;(identifier **1) index-nodes
-              [parameter-index-nodes (lambda*-parameter-index-node-extract (cadr children))]
+              [parameter-index-nodes (lambda*-parameter-index-node-extract (cadr children) document)]
               [parameter-index-nodes-products (construct-parameter-index-nodes-products-with parameter-index-nodes)])
             (map 
               (lambda (t) (extend-index-node-substitution-list index-node t))
@@ -33,9 +33,9 @@
       (except c
         [else '()]))))
 
-(define (lambda*-parameter-index-node-extract parameter-index-nodes)
+(define (lambda*-parameter-index-node-extract parameter-index-nodes document)
   ;; for lambda*, the parameter could be (identifier1 identifier2 ...)
-  ;; and also ((identifier1 value1) identifier2 (identifier3 value3) ...) ,
+  ;; and also ((identifier1 type1) identifier2 (identifier3 type3) ...) ,
   ;; this function is used to get all identifier index-nodes.
   (map
     (lambda (index-node)
@@ -44,7 +44,9 @@
           (match expression
             [(? symbol? expression)
               index-node]
-            [(? pair? expression)
+            [((? symbol? param) (? symbol? type))
+              (extend-index-node-substitution-list (car (index-node-children index-node))
+                (find-available-references-for (cadr (index-node-children index-node)) document type))
               (car (index-node-children index-node))])))
     (index-node-children parameter-index-nodes)))
 
