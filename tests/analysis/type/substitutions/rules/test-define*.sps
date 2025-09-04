@@ -38,6 +38,7 @@
             [target-text (document-text target-document)]
             [target-index-node (pick-index-node-from (document-index-node-list target-document) (text+position->int target-text 49 10))]
             [check-base (construct-type-expression-with-meta 'number?)])
+(pretty-print `(DEBUG: ,(index-node-datum/annotations target-index-node)))
         (construct-substitutions-for target-document)
         ; (debug:recursive-print-expression&uuid (car (document-index-node-list target-document)))
         (test-equal #t 
@@ -53,44 +54,34 @@
             [check-base (construct-type-expression-with-meta 'boolean?)])
         (construct-substitutions-for target-document)
         ; (pretty-print (map inner:type->string (type:recursive-interpret-result-list variable (make-type:environment (document-substitution-list target-document)))))
+(pretty-print `(DEBUG: ,(map (lambda (x) (if (index-node? x) (pretty-print `(DEBUG: ,(index-node-datum/annotations x)))) ) (map car (filter list? (type:interpret-result-list target-index-node))))))
+
         (test-equal #t 
             (contain? 
                 (map car (filter list? (type:interpret-result-list target-index-node))) check-base)))
 (test-end)
 
-(test-begin "debug for index-node.sls:debug:print-expressions")
-    (let* ([workspace (init-workspace (string-append (current-directory) "/virtual-file-system/") '() #f #f)]
+(test-begin "define* for type inference")
+    (let* ([workspace (init-workspace (string-append (current-directory) "/tests/resources/r7rs") 'txt 's7 #f #f)]
             [root-file-node (workspace-file-node workspace)]
             [root-library-node (workspace-library-node workspace)]
-            [target-file-node (walk-file root-file-node (string-append (current-directory) "/virtual-file-system/index-node.sls"))]
+            [target-file-node (walk-file root-file-node (string-append (current-directory) "/tests/resources/r7rs/scheme/base.scm.txt"))]
             [target-document (file-node-document target-file-node)]
             [target-text (document-text target-document)]
-            [target-index-node (pick-index-node-from (document-index-node-list target-document) (text+position->int target-text 122 10))]
-            [check-base 'void?])
+            [target-index-node (car (index-node-children (cadr (index-node-children (pick-index-node-from (document-index-node-list target-document) (text+position->int target-text 326 0))))))]
+            [check-base (construct-type-expression-with-meta 'string?)])
+(pretty-print `(DEBUG: ,(index-node-datum/annotations target-index-node)))
+
         (construct-substitutions-for target-document)
-        ; (debug:print-expression&uuid target-index-node)
         ; (debug:recursive-print-expression&uuid (car (document-index-node-list target-document)))
+(pretty-print `(DEBUG: Here after construct))
+(pretty-print `(DEBUG: ,(map car (filter list? (type:interpret-result-list target-index-node)))))
+
         (test-equal #t 
             (contain? 
                 (map car (filter list? (type:interpret-result-list target-index-node))) check-base)))
 (test-end)
 
-; a better cutting is needed
-; (test-begin "cartesian-products may slow down the inference because combination blows up")
-;     (let* ([workspace (init-workspace (string-append (current-directory) "/util/") '() #f #f)]
-;             [root-file-node (workspace-file-node workspace)]
-;             [root-library-node (workspace-library-node workspace)]
-;             [target-file-node (walk-file root-file-node (string-append (current-directory) "/util/binary-search.sls"))]
-;             [target-document (file-node-document target-file-node)]
-;             [target-text (document-text target-document)]
-;             [target-index-node (pick-index-node-from (document-index-node-list target-document) (text+position->int target-text 4 12))]
-;             [variable (index-node-variable target-index-node)]
-;             [check-base (construct-type-expression-with-meta 'boolean?)])
-;         (construct-substitution-list-for target-document)
-;         ; (debug:recursive-print-expression&variable (car (document-index-node-list target-document)))
-;         (test-equal #t 
-;             (contain? 
-;                 (map car (filter list? (type:interpret-result-list variable (make-type:environment (document-substitution-list target-document))))) check-base)))
-; (test-end)
+
 
 (exit (if (zero? (test-runner-fail-count (test-runner-get))) 0 1))

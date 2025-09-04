@@ -17,6 +17,7 @@
   (let* ([ann (index-node-datum/annotations index-node)]
       [expression (annotation-stripped ann)]
       [children (index-node-children index-node)])
+(pretty-print `(DEBUG: ,expression))
     (try
       (match expression
         [(_ ((? symbol? identifiers) parameters ... ) tail) 
