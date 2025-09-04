@@ -23,7 +23,7 @@
           (let* ([identifier-index-node (car (index-node-children (cadr (index-node-children index-node))))]
               [tail-index-node (car (reverse (index-node-children index-node)))]
 
-              [parameter-index-nodes (define*-parameter-index-node-extract (cdr (index-node-children (cadr (index-node-children index-node)))))]
+              [parameter-index-nodes (define*-parameter-index-node-extract (cdr (index-node-children (cadr (index-node-children index-node)))) document)]
               [parameter-index-nodes-products (construct-parameter-index-nodes-products-with parameter-index-nodes)]
               [lambda-details (construct-lambdas-with (list tail-index-node) parameter-index-nodes-products)])
             (map 
@@ -34,7 +34,7 @@
       (except c
         [else '()]))))
 
-(define (define*-parameter-index-node-extract parameter-index-nodes)
+(define (define*-parameter-index-node-extract parameter-index-nodes document)
   ;; for define*, the parameter could be (identifier1 identifier2 ...)
   ;; and also ((identifier1 type1) identifier2 (identifier3 type3) ...) ,
   ;; this function is used to get all identifier index-nodes.
