@@ -35,12 +35,12 @@ jobs:
           md5=$(md5sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
           sha256=$(sha256sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
           echo -e "### build time\n\n" > ${{ github.workspace }}-body.txt
-          echo "$(date -u +%Y-%m-%d-%H-%M-%S)\n\n" >> ${{ github.workspace }}-body.txt
-          echo "### File Hashes\n\n" >> ${{ github.workspace }}-body.txt
-          echo "| Algorithm | Hash |\n" >> ${{ github.workspace }}-body.txt
-          echo "| --------- | ---- |\n" >> ${{ github.workspace }}-body.txt
-          echo "| MD5       | \`$md5\` |\n" >> ${{ github.workspace }}-body.txt
-          echo "| SHA256    | \`$sha256\` |\n" >> ${{ github.workspace }}-body.txt
+          echo -e "$(date -u +%Y-%m-%d-%H-%M-%S)\n\n" >> ${{ github.workspace }}-body.txt
+          echo -e "### File Hashes\n\n" >> ${{ github.workspace }}-body.txt
+          echo -e "| Algorithm | Hash |\n" >> ${{ github.workspace }}-body.txt
+          echo -e "| --------- | ---- |\n" >> ${{ github.workspace }}-body.txt
+          echo -e "| MD5       | \`$md5\` |\n" >> ${{ github.workspace }}-body.txt
+          echo -e "| SHA256    | \`$sha256\` |\n" >> ${{ github.workspace }}-body.txt
 
 
       - name: Release
