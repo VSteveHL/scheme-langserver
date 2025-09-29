@@ -29,8 +29,23 @@ jobs:
         id: tag
         run: echo "tag_name=auto-build-$(date -u +%Y-%m-%d-%H-%M-%S)" >> "$GITHUB_OUTPUT"
 
+      - name: generate body
+        id: body
+        run: |
+          md5=$(md5sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
+          sha256=$(sha256sum build/scheme-langserver-x86_64-linux-glibc | awk '{print $1}')
+          echo -e "### build time\n\n" > ${{ github.workspace }}-body.txt
+          echo "$(date -u +%Y-%m-%d-%H-%M-%S)\n\n" >> ${{ github.workspace }}-body.txt
+          echo "### File Hashes\n\n" >> ${{ github.workspace }}-body.txt
+          echo "| Algorithm | Hash |\n" >> ${{ github.workspace }}-body.txt
+          echo "| --------- | ---- |\n" >> ${{ github.workspace }}-body.txt
+          echo "| MD5       | \`$md5\` |\n" >> ${{ github.workspace }}-body.txt
+          echo "| SHA256    | \`$sha256\` |\n" >> ${{ github.workspace }}-body.txt
+
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag_name }}
           files: build/scheme-langserver-x86_64-linux-glibc
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          body_path: ${{ github.workspace }}-body.txt
